@@ -19,3 +19,14 @@ class MoviesDataBase(models.Model):
     Vote = models.CharField(max_length=500)
     Gross = models.CharField(max_length=500)
 
+
+
+class SearchMoviesModel(models.Model):
+    search_Name = models.CharField(max_length=500)
+    search_Year = models.CharField(max_length=500)
+    search_Duration = models.CharField(max_length=500)
+    search_Rating = models.CharField(max_length=500)
+    search_MetaScore = models.CharField(max_length=500)
+    search_Vote = models.CharField(max_length=500)
+    search_Gross = models.CharField(max_length=500)
+    search_user = models.CharField(max_length=500)

@@ -1,4 +1,6 @@
 # import APIResponse as APIResponse
+import json
+
 from django.db.models import Q
 from django.shortcuts import render
 
@@ -18,14 +20,13 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework import status
 from app.models import *
 
-from app.serializers import RegisterSerializer, MovieSerializer
+from app.serializers import RegisterSerializer, MovieSerializer, MoviesSearchSerializers
 
 
 # Create your views here.
 
 class CreateView(ListCreateAPIView):
     queryset = MoviesUser.objects.all()
-    # queryset = Moviesdata.objects.all()[:10]
     serializer_class = RegisterSerializer
     # def list(self, request, *args, **kwargs):
     #
@@ -34,6 +35,10 @@ class CreateView(ListCreateAPIView):
 
 
 def MoviesdataView(request):
+
+    """
+    import and export data to data
+    """
     stu = MoviesDataBase.objects.all()
     data = []
     for s in stu:
@@ -56,13 +61,7 @@ def MoviesdataView(request):
 class MoviesDetails(ListCreateAPIView):
     queryset = MoviesDataBase.objects.all()
     serializer_class = MovieSerializer
-    # filter_backends = [SearchFilter]
-    # search_fields = ['Name']
-    # query_filter_params = ["Name"]
-    # def get_search_fields(self, view, request):
-    #     if request.query_params.get('title_only'):
-    #         return ['title']
-    #     return super().get_search_fields(view, request)
+
 
     def filter_queryset(self, params):
         # import pdb;pdb.set_trace()
@@ -82,7 +81,25 @@ class MoviesDetails(ListCreateAPIView):
         queryset = self.filter_queryset(self.params)
         print(queryset,"++++++++++++++++++++++++++++++++++++")
         print(request.user, "ddddddddddddddddddddddd")
-        serializer = MovieSerializer(queryset, many= True).data
+        # import pdb; pdb.set_trace()
+        '''
+        save user search data 
+        '''
+        data = MovieSerializer(queryset, many= True).data
+        for x in data:
+            Search = SearchMoviesModel.objects.create(
+                search_Name=x['Name'],
+                search_Year=x['Year'],
+                search_Duration=x['Duration'],
+                search_Rating=x['Rating'],
+                search_MetaScore=x['MetaScore'],
+                search_Vote=x['Vote'],
+                search_Gross=x['Gross'],
+                search_user=request.user.username
+
+            )
+            Search.save()
+
 
 
         if request.user.first_login == False:
@@ -105,4 +122,4 @@ class MoviesDetails(ListCreateAPIView):
             # return Response(search_data, status=status.HTTP_302_FOUND)
 
             # print("ddddddddddddddddddddddddddd")
-        return Response(serializer, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)

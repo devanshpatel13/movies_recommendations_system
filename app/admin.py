@@ -19,3 +19,5 @@ class MoviesAdmin(ImportExportModelAdmin):
                     'Gross',
 
                     ]
+
+admin.site.register(SearchMoviesModel)
