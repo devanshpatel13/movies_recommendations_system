@@ -21,3 +21,32 @@ class MoviesAdmin(ImportExportModelAdmin):
                     ]
 
 admin.site.register(SearchMoviesModel)
+
+
+@admin.register(MoviesDataModel)
+class MoviesAdmin(ImportExportModelAdmin):
+    list_display = ['budget',
+                    'genres',
+                    'homepage',
+                    'keywords',
+                    'original_language',
+                    'original_title',
+                    'overview',
+                    'popularity',
+                    'production_companies',
+                    'production_countries',
+                    'release_date',
+                    'revenue',
+                    'runtime',
+                    'spoken_languages',
+                    'status',
+                    'tagline',
+                    'title',
+                    'vote_average',
+                    'vote_count',
+                    'movie_id',
+                    'cast',
+                    'crew',
+
+
+                    ]

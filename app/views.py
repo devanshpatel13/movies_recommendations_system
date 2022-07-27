@@ -20,10 +20,12 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework import status
 from app.models import *
 
-from app.serializers import RegisterSerializer, MovieSerializer, MoviesSearchSerializers
+from app.serializers import RegisterSerializer, MoviesDataSerializers, MoviesSearchSerializers
 
 
 # Create your views here.
+from app.tests import get_recommendations, cosine_sim2
+
 
 class CreateView(ListCreateAPIView):
     queryset = MoviesUser.objects.all()
@@ -39,35 +41,50 @@ def MoviesdataView(request):
     """
     import and export data to data
     """
-    stu = MoviesDataBase.objects.all()
+    stu = MoviesDataModel.objects.all()
     data = []
     for s in stu:
         data.append({
-            'Name': s.Name,
-            'Year': s.Year,
-            'Duration': s.Duration,
-            'Rating': s.Rating,
-            'MetaScore': s.MetaScore,
-            'Vote': s.Vote,
-            'Gross': s.Gross,
+            'budget': s.budget,
+            'genres': s.genres,
+            'homepage': s.homepage,
+            'keywords': s.keywords,
+            'original_language': s.original_language,
+            'original_title': s.original_title,
+            'overview': s.overview,
+            'popularity': s.popularity,
+            'production_companies': s.production_companies,
+            'production_countries': s.production_countries,
+            'release_date': s.release_date,
+            'revenue': s.revenue,
+            'runtime': s.runtime,
+            'spoken_languages': s.spoken_languages,
+            'status': s.status,
+            'tagline': s.tagline,
+            'title': s.title,
+            'vote_average': s.vote_average,
+            'vote_count': s.vote_count,
+            'movie_id': s.movie_id,
+            'cast': s.cast,
+            'crew': s.crew,
 
         })
-    pd.DataFrame(data).to_excel('data.xlsx', index=False)
-    excel = pd.read_excel('data.xlsx', index_col=0)
+    pd.DataFrame(data).to_excel('/home/plutusdev/Downloads/test.xlsx', index=False)
+    excel = pd.read_excel('/home/plutusdev/Downloads/test.xlsx', index_col=0)
     print(excel)
     return JsonResponse({'status': 200})
 
 
 class MoviesDetails(ListCreateAPIView):
-    queryset = MoviesDataBase.objects.all()
-    serializer_class = MovieSerializer
+    queryset = MoviesDataModel.objects.all()
+    serializer_class = MoviesDataSerializers
 
 
     def filter_queryset(self, params):
         # import pdb;pdb.set_trace()
         filter_kwargs = {}
         if "search" in params:
-            query = Q(Name=params['search'])
+            query = Q(title=params['search'])
 
         return self.queryset.filter(query)
 
@@ -85,17 +102,18 @@ class MoviesDetails(ListCreateAPIView):
         '''
         save user search data 
         '''
-        data = MovieSerializer(queryset, many= True).data
+        data = MoviesDataSerializers(queryset, many= True).data
         for x in data:
             Search = SearchMoviesModel.objects.create(
-                search_Name=x['Name'],
-                search_Year=x['Year'],
-                search_Duration=x['Duration'],
-                search_Rating=x['Rating'],
-                search_MetaScore=x['MetaScore'],
-                search_Vote=x['Vote'],
-                search_Gross=x['Gross'],
-                search_user=request.user.username
+                search_Name=x['title'],
+                search_Year=x['release_date'],
+                search_cast=x['cast'],
+                search_crew=x['crew'],
+                search_overview=x['overview'],
+                search_popularity=x['popularity'],
+                search_vote_average=x['vote_average'],
+                search_vote_count=x['vote_count'],
+                search_user=request.user.id
 
             )
             Search.save()
@@ -103,12 +121,14 @@ class MoviesDetails(ListCreateAPIView):
 
 
         if request.user.first_login == False:
+
             """
-            Check useis first time login , then give output on rating based
+            Check if user first time login , then give output on rating based
             """
 
-            get_top10_movies = MoviesDataBase.objects.filter().order_by("-Rating")[:10]
-            data = MovieSerializer(get_top10_movies, many=True).data
+            get_top10_movies = MoviesDataModel.objects.filter().order_by("-Rating")[:10]
+            data = MoviesDataSerializers(get_top10_movies, many=True).data
+
 
             if data:
                 request.user.first_login = True
@@ -116,10 +136,27 @@ class MoviesDetails(ListCreateAPIView):
                 return Response(data, status=status.HTTP_302_FOUND)
 
         else:
-            pass
-            # get_search_movies = MoviesDataBase.objects.all()
-            # search_data = MovieSerializer(get_search_movies, many=True).data
-            # return Response(search_data, status=status.HTTP_302_FOUND)
+            ...
 
-            # print("ddddddddddddddddddddddddddd")
-        return Response(data, status=status.HTTP_200_OK)
+            # import pdb;pdb.set_trace()
+            # data = SearchMoviesModel.objects.get(id=id).filter("search_Name")
+            # print(data,"sssssssssssssssssssssss")
+            movies = SearchMoviesModel.objects.filter(search_user=3).values()
+            for x in movies:
+                get_search_movies_name = x['search_Name']
+                y = get_recommendations(get_search_movies_name, cosine_sim2)
+                print(get_search_movies_name,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+                print(y,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            print('args ========== ', self.params.values())
+            import pdb;pdb.set_trace()
+            print(request.user.search_Name,"gggggggggggggg")
+            for x in self.params.values():
+
+               y= get_recommendations(x, cosine_sim2)
+            # import pdb; pdb.set_trace()
+            ...
+            return Response(y, status=status.HTTP_302_FOUND)
+
+
+        return Response(data,status=status.HTTP_200_OK)

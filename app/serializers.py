@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from .models import *
+
 from django.utils import timezone
 
 
@@ -39,20 +40,6 @@ class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = MoviesDataBase
         fields = "__all__"
-        #
-        # def search_create(self, validated_data):
-        #     Search = SearchMoviesModel.objects.create(
-        #         search_Name=validated_data['Name'],
-        #         search_Year=validated_data['Year'],
-        #         search_Duration=validated_data['Duration'],
-        #         search_Rating=validated_data['Rating'],
-        #         search_MetaScore=validated_data['MetaScore'],
-        #         search_Vote=validated_data['Vote'],
-        #         search_Gross=validated_data['Gross'],
-        #         search_user=validated_data["request.user"]
-        #
-        #     )
-        #     Search.save()
 
 
 
@@ -61,19 +48,27 @@ class MoviesSearchSerializers(serializers.ModelSerializer):
     class Meta:
         model = SearchMoviesModel
         fields = "__all__"
-    def search_create(self, validated_data,):
+
+class MoviesDataSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = MoviesDataModel
+        fields = "__all__"
+
+    # def search_create(self, validated_data,):
         # import pdb;
         # pdb.set_trace()
 
-        Search = SearchMoviesModel.objects.create(
-            search_Name=validated_data['Name'],
-            search_Year=validated_data['Year'],
-            search_Duration=validated_data['Duration'],
-            search_Rating = validated_data['Rating'],
-            search_MetaScore= validated_data['MetaScore'],
-            search_Vote= validated_data['Vote'],
-            search_Gross= validated_data['Gross'],
-            search_user = validated_data["request.user"]
+        # Search = SearchMoviesModel.objects.create(
+        #     search_Name=validated_data['Name'],
+        #     search_Year=validated_data['Year'],
+        #     search_Duration=validated_data['Duration'],
+        #     search_Rating = validated_data['Rating'],
+        #     search_MetaScore= validated_data['MetaScore'],
+        #     search_Vote= validated_data['Vote'],
+        #     search_Gross= validated_data['Gross'],
+        #     search_user = validated_data["request.user"]
+        #
+        # )
+        # Search.save()
 
-        )
-        Search.save()
+
