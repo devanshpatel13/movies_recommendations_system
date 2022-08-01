@@ -93,27 +93,31 @@ class MoviesDetails(ListCreateAPIView):
         """
     FOr the search
     """
-        self.params = request.query_params.copy()
-        print(self.params)
-        queryset = self.filter_queryset(self.params)
-        print(queryset,"++++++++++++++++++++++++++++++++++++")
-        print(request.user, "ddddddddddddddddddddddd")
-        # import pdb; pdb.set_trace()
+        print(request.user.first_login,"sssssssssssssssssssssssssssss")
+        print(request.query_params.copy(),",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+        if request.query_params.copy():
+            self.params = request.query_params.copy()
+            print(self.params)
+            queryset = self.filter_queryset(self.params)
+            print(queryset,"++++++++++++++++++++++++++++++++++++")
+            print(request.user, "ddddddddddddddddddddddd")
+            # import pdb; pdb.set_trace()
         '''
         save user search data 
         '''
+        # print(request.user.id)
         data = MoviesDataSerializers(queryset, many= True).data
         for x in data:
             Search = SearchMoviesModel.objects.create(
-                search_Name=x['title'],
-                search_Year=x['release_date'],
-                search_cast=x['cast'],
-                search_crew=x['crew'],
-                search_overview=x['overview'],
-                search_popularity=x['popularity'],
-                search_vote_average=x['vote_average'],
-                search_vote_count=x['vote_count'],
-                search_user=request.user.id
+                search_movie_name=x['title'],
+                search_movie_date=x['release_date'],
+                search_movie_cast=x['cast'],
+                search_movie_crew=x['crew'],
+                search_movie_overview=x['overview'],
+                search_movie_popularity=x['popularity'],
+                search_movie_vote_average=x['vote_average'],
+                search_movie_vote_count=x['vote_count'],
+                search_user=request.user
 
             )
             Search.save()
@@ -126,7 +130,7 @@ class MoviesDetails(ListCreateAPIView):
             Check if user first time login , then give output on rating based
             """
 
-            get_top10_movies = MoviesDataModel.objects.filter().order_by("-Rating")[:10]
+            get_top10_movies = MoviesDataModel.objects.filter().order_by("-vote_average")[:10]
             data = MoviesDataSerializers(get_top10_movies, many=True).data
 
 
@@ -136,27 +140,34 @@ class MoviesDetails(ListCreateAPIView):
                 return Response(data, status=status.HTTP_302_FOUND)
 
         else:
-            ...
 
-            # import pdb;pdb.set_trace()
-            # data = SearchMoviesModel.objects.get(id=id).filter("search_Name")
-            # print(data,"sssssssssssssssssssssss")
-            movies = SearchMoviesModel.objects.filter(search_user=3).values()
-            for x in movies:
-                get_search_movies_name = x['search_Name']
-                y = get_recommendations(get_search_movies_name, cosine_sim2)
+            lsd =[]
+            st = set()
+            lst = []
+            """
+            give movies suggestions based on user search movies
+             """
+            movies = SearchMoviesModel.objects.filter(search_user=request.user.id).values()
+            if movies:
+                for x in movies:
+                    get_search_movies_name = x['search_movie_name']
+                    print(get_search_movies_name,"ssssssssssssssssssssssssssssssssssssssssssssssss")
+                    st.add(get_search_movies_name)
+
+                    lst =list(st)
+
+                print(lst)
+                # import pdb;pdb.set_trace()
+                for data in lst:
+                    y = get_recommendations(data, cosine_sim2)
+                    lsd.append(y)
+
                 print(get_search_movies_name,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-                print(y,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print('args ========== ', self.params.values())
-            import pdb;pdb.set_trace()
-            print(request.user.search_Name,"gggggggggggggg")
-            for x in self.params.values():
-
-               y= get_recommendations(x, cosine_sim2)
-            # import pdb; pdb.set_trace()
-            ...
-            return Response(y, status=status.HTTP_302_FOUND)
-
+                aa = lsd
+                return Response(aa, status=status.HTTP_302_FOUND)
+            else:
+                get_top10_movies = MoviesDataModel.objects.filter().order_by("-vote_average")[:10]
+                data = MoviesDataSerializers(get_top10_movies, many=True).data
+                return Response(data, status=status.HTTP_200_OK)
 
         return Response(data,status=status.HTTP_200_OK)
