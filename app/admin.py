@@ -5,7 +5,7 @@ from import_export.admin import ImportExportModelAdmin
 
 @admin.register(MoviesUser)
 class MoviesUserAdmin(admin.ModelAdmin):
-    list_display = ["username", "email", "first_name","first_login"]
+    list_display = ["id","username", "email", "first_name","first_login"]
 
 
 @admin.register(MoviesDataBase)

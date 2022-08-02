@@ -24,7 +24,7 @@ class SearchMoviesModel(models.Model):
     search_movie_date = models.TextField(blank= True, null=True)
     search_movie_cast = models.TextField()
     search_movie_crew = models.TextField()
-    search_movie_overview = models.CharField(max_length=500, null=True)
+    search_movie_overview = models.TextField(max_length=500, null=True)
     search_movie_popularity = models.BigIntegerField()
     search_user = models.ForeignKey(MoviesUser,on_delete=models.CASCADE, blank=True, null=True)
     search_movie_vote_average = models.BigIntegerField()
