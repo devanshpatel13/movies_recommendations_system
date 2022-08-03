@@ -275,6 +275,7 @@ def get_recommendations(title, cosine_sim=cosine_sim):
     sim_scores = list(enumerate(cosine_sim[idx]))
 
     # Sort the movies based on the similarity scores
+    # import pdb;pdb.set_trace()
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
 
     # Get the scores of the 10 most similar movies

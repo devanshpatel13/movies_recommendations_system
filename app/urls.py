@@ -13,7 +13,7 @@ from .views import *
 
 urlpatterns = [
 
-    path('create/', CreateView.as_view(), name="create"),
+    path('', CreateView.as_view(), name="create"),
     path("movies/", MoviesdataView, name="movies"),
     path("movies_details/", MoviesDetails.as_view(), name="moviesdetails"),
     path('auth', include('rest_framework.urls', namespace='rest_framework'))

@@ -1,22 +1,23 @@
-import datetime
-
-from django.contrib.auth.models import User
-from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from .models import *
+from rest_framework.response import Response
+from rest_framework.validators import UniqueValidator
 
-from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True, required=True)
+    password2 = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
+    password = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
+    username = serializers.CharField(max_length=15)
+    first_name = serializers.CharField(max_length=15)
 
     class Meta:
         model = MoviesUser
-        fields = ['username', 'email', 'password', 'password2', 'first_name','first_login']
+        fields = ['username', 'email', 'password', 'password2', 'first_name']
 
     def validate(self, attrs):
+        print(attrs)
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
 
@@ -27,12 +28,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
-
         )
-
         user.set_password(validated_data['password'])
         user.save()
-
         return user
 
 
@@ -42,33 +40,13 @@ class MovieSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
-
 class MoviesSearchSerializers(serializers.ModelSerializer):
     class Meta:
         model = SearchMoviesModel
         fields = "__all__"
 
+
 class MoviesDataSerializers(serializers.ModelSerializer):
     class Meta:
         model = MoviesDataModel
         fields = "__all__"
-
-    # def search_create(self, validated_data,):
-        # import pdb;
-        # pdb.set_trace()
-
-        # Search = SearchMoviesModel.objects.create(
-        #     search_Name=validated_data['Name'],
-        #     search_Year=validated_data['Year'],
-        #     search_Duration=validated_data['Duration'],
-        #     search_Rating = validated_data['Rating'],
-        #     search_MetaScore= validated_data['MetaScore'],
-        #     search_Vote= validated_data['Vote'],
-        #     search_Gross= validated_data['Gross'],
-        #     search_user = validated_data["request.user"]
-        #
-        # )
-        # Search.save()
-
-

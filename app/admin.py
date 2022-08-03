@@ -25,7 +25,7 @@ admin.site.register(SearchMoviesModel)
 
 @admin.register(MoviesDataModel)
 class MoviesAdmin(ImportExportModelAdmin):
-    list_display = ['budget',
+    list_display = ['id','budget',
                     'genres',
                     'homepage',
                     'keywords',
