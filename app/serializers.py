@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from .models import *
 from rest_framework.response import Response
-from rest_framework.validators import UniqueValidator
 
-from django.shortcuts import get_object_or_404
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -16,11 +15,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = MoviesUser
         fields = ['username', 'email', 'password', 'password2', 'first_name']
 
-    def validate(self, attrs):
-        print(attrs)
+
+
+    def validate(self, attrs ,code= None, detail=None):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
-
         return attrs
 
     def create(self, validated_data):
@@ -33,11 +32,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-
-class MovieSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MoviesDataBase
-        fields = "__all__"
 
 
 class MoviesSearchSerializers(serializers.ModelSerializer):

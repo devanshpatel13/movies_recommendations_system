@@ -8,15 +8,6 @@ class MoviesUser(AbstractUser):
     first_login = models.BooleanField(default=False)
 
 
-# To Remove
-class MoviesDataBase(models.Model):
-    Name = models.CharField(max_length=500)
-    Year = models.CharField(max_length=500)
-    Duration = models.CharField(max_length=500)
-    Rating = models.CharField(max_length=500)
-    MetaScore = models.CharField(max_length=500)
-    Vote = models.CharField(max_length=500)
-    Gross = models.CharField(max_length=500)
 
 
 class SearchMoviesModel(models.Model):
@@ -35,7 +26,6 @@ class MoviesDataModel(models.Model):
     budget = models.FloatField()
     genres = models.TextField()
     homepage = models.TextField(null=True)
-    # id = models.CharField(max_length=500)
     keywords = models.TextField()
     original_language = models.TextField()
     original_title = models.TextField()
