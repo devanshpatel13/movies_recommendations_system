@@ -1,26 +1,13 @@
-# import APIResponse as APIResponse
-import json
-import pdb
-from django.db.models import Q
-from .paginations import *
-from django.shortcuts import render
-
-# Create your views here.
 import csv
 import pandas as pd
-# from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
-from rest_framework.request import Request
+from django.db.models import Q
+from django.http import JsonResponse
 from rest_framework.response import Response
-from rest_framework import viewsets
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework import status
 from app.models import *
 from email_validator import validate_email, EmailNotValidError, caching_resolver
 from app.serializers import RegisterSerializer, MoviesDataSerializers
-
-# Create your views here.
 from app.tests import get_recommendations, cosine_sim2
 
 
@@ -29,17 +16,18 @@ class CreateView(CreateAPIView):
     serializer_class = RegisterSerializer
 
 
-
-
     def post(self, request, *args, **kwargs):
         email = request.data["email"]
         serializer = self.serializer_class(data=request.data)
-        if request.data["password"] != request.data["password2"]:
-            return Response({"msg": "password and confirm password are not same"},status= status.HTTP_400_BAD_REQUEST)
+        if request.data["password"] != request.data["confirm_password"]:
+            return Response({"msg": "password and confirm password does not match"},
+                            status=status.HTTP_400_BAD_REQUEST)
         try:
             if email:
+                #Resolve the cashing issues if any
                 resolver = caching_resolver(timeout=10)
                 try:
+                    #Validate email address and domain address (pypi:"https://pypi.org/project/email-validator/")
                     email = validate_email(email, dns_resolver=resolver).email
                 except EmailNotValidError as e:
                     return Response({
@@ -49,7 +37,6 @@ class CreateView(CreateAPIView):
                     return Response({
                         "msg": "Something went wrong!"},
                         status=status.HTTP_400_BAD_REQUEST)
-                # import pdb;pdb.set_trace()
             get_user = MoviesUser.objects.get(username=request.data['username'])
             return Response({"msg": f'username {get_user} is already exit'})
         except Exception as e:
@@ -58,7 +45,9 @@ class CreateView(CreateAPIView):
                 return Response(serializer.data)
             return Response({"msg":"not valid"})
 
-
+'''
+Call only once for fetching data from the dataset and import it to our database.
+'''
 def MoviesdataView(request):
     """
     import and export data to data
@@ -91,17 +80,15 @@ def MoviesdataView(request):
             'crew': s.crew,
 
         })
-    # pd.DataFrame(data).to_excel('/home/plutusdev/Downloads/test.xlsx', index=False)
-    # excel = pd.read_excel('/home/plutusdev/Downloads/test.xlsx', index_col=0)
-    # print(excel)
+    pd.DataFrame(data).to_excel('/home/plutusdev/Downloads/test.xlsx', index=False)
+    excel = pd.read_excel('/home/plutusdev/Downloads/test.xlsx', index_col=0)
+    print(excel)
     return JsonResponse({'status': 200})
 
 
 class MoviesDetails(ListAPIView):
     queryset = MoviesDataModel.objects.all()
     serializer_class = MoviesDataSerializers
-    pagination_class = Pagenations
-
 
     def filter_queryset(self, params):
         filter_kwargs = {}
@@ -123,7 +110,7 @@ class MoviesDetails(ListAPIView):
                     if data:
                         for x in data:
                             """
-                            save user search history when user search any movies 
+                            save movies search history when user searches any movies 
                             """
                             Search = SearchMoviesModel.objects.create(
                                 search_movie_name=x['title'],
@@ -146,12 +133,14 @@ class MoviesDetails(ListAPIView):
                         '''
                         OR 
                         '''
-                        return Response({'message': "This movie doesn't exist", 'status_code': status.HTTP_200_OK})
+                        return Response({'message': "This movie doesn't exist"},
+                                        status=status.HTTP_200_OK)
 
                 else:
                     if request.user.first_login == False:
                         """
-                        Check user first_login status and give suggestion based on rating if first_login is  Flase"""
+                        Check user first_login status and give suggestion based on rating if first_login is Flase
+                        """
                         get_top10_movies = MoviesDataModel.objects.filter().order_by("-vote_average")[:10]
                         data = MoviesDataSerializers(get_top10_movies, many=True).data
                         if data:
@@ -159,11 +148,9 @@ class MoviesDetails(ListAPIView):
                             request.user.save()
                         return Response(data, status=status.HTTP_200_OK)
                     else:
-                        lsd = []
-                        st = set()
-                        lst = []
-
-
+                        list1 = []
+                        set1 = set()
+                        list2 = []
 
                         movies = SearchMoviesModel.objects.filter(search_user=request.user.pk).values()
                         """
@@ -172,13 +159,13 @@ class MoviesDetails(ListAPIView):
                         if movies:
                             for x in movies:
                                 get_search_movies_name = x['search_movie_name']
-                                st.add(get_search_movies_name)
-                                lst = list(st)
-                            for data in lst:
+                                set1.add(get_search_movies_name)
+                                list2 = list(set1)
+                            for data in list2:
                                 y = get_recommendations(data, cosine_sim2)
-                                lsd.append(y)
+                                list1.append(y)
 
-                            aa = lsd
+                            aa = list1
                             return Response(aa, status=status.HTTP_302_FOUND)
                         else:
                             get_top10_movies = MoviesDataModel.objects.filter().order_by("-vote_average")[:10]
@@ -189,11 +176,12 @@ class MoviesDetails(ListAPIView):
                 # data = MoviesDataSerializers(get_top10_movies, many=True).data
                 # return Response(data, status=status.HTTP_200_OK)
 
-                return Response({'message': "url doesn't exist", 'status_code': 200})
+                return Response({'message': "url doesn't exist"},
+                                status=status.HTTP_200_OK)
         else:
-            lsd = []
-            st = set()
-            lst = []
+            list1 = []
+            set1 = set()
+            list2 = []
 
             movies = SearchMoviesModel.objects.filter(search_user=request.user.pk).values()
             if movies:
@@ -202,13 +190,13 @@ class MoviesDetails(ListAPIView):
                     give movies suggestions based on user search history
                     """
                     get_search_movies_name = x['search_movie_name']
-                    st.add(get_search_movies_name)
-                    lst = list(st)
-                for data in lst:
+                    set1.add(get_search_movies_name)
+                    list2 = list(set1)
+                for data in list2:
                     y = get_recommendations(data, cosine_sim2)
-                    lsd.append(y)
-                aa = lsd
-                return Response(aa, status=status.HTTP_302_FOUND)
+                    list1.append(y)
+                suggestion_movies = list1
+                return Response(suggestion_movies, status=status.HTTP_302_FOUND)
             else:
 
                 """

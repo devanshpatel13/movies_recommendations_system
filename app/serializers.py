@@ -3,24 +3,21 @@ from .models import *
 from rest_framework.response import Response
 
 
-
-
 class RegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
+    confirm_password = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
     password = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
     username = serializers.CharField(max_length=15)
     first_name = serializers.CharField(max_length=15)
 
     class Meta:
         model = MoviesUser
-        fields = ['username', 'email', 'password', 'password2', 'first_name']
+        fields = ['username', 'email', 'password', 'confirm_password', 'first_name']
 
 
-
-    def validate(self, attrs ,code= None, detail=None):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-        return attrs
+    # def validate(self, attrs ,code= None, detail=None):
+    #     if attrs['password'] != attrs['confirm_password']:
+    #         raise serializers.ValidationError({"password": "Password fields didn't match."})
+    #     return attrs
 
     def create(self, validated_data):
         user = MoviesUser.objects.create(
@@ -31,7 +28,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
 
 
 class MoviesSearchSerializers(serializers.ModelSerializer):
